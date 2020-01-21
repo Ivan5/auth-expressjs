@@ -7,6 +7,13 @@ var logger = require("morgan");
 var indexRouter = require("./routes/index");
 var userRouter = require("./routes/user");
 
+var mongoose = require("mongoose");
+
+mongoose.connect("mongodb://localhost:27017/auth-express", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
 var app = express();
 
 // view engine setup
