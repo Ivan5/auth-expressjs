@@ -9,6 +9,9 @@ var userRouter = require("./routes/user");
 
 var mongoose = require("mongoose");
 
+var passport = require("passport");
+var session = require("express-session");
+
 mongoose.connect("mongodb://localhost:27017/auth-express", {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -24,6 +27,16 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(
+  session({
+    secret: "mysecret",
+    resave: false,
+    saveUninitialized: false
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
