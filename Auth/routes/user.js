@@ -4,7 +4,7 @@ var router = express.Router();
 
 const User = require("../models/User");
 const passport = require("passport");
-const LocalStrategy = require("passport").Strategy;
+const LocalStrategy = require("passport-local").Strategy;
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -23,9 +23,9 @@ passport.use(
       usernameField: "email",
       passwordField: "password"
     },
-    (email, passport, done) => {
+    (email, password, done) => {
       User.findOne({ email: email }, (err, user) => {
-        if (Err) {
+        if (err) {
           return done(err);
         }
 
@@ -47,6 +47,35 @@ passport.use(
     }
   )
 );
+
+passport.use(
+  "local.signin",
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password"
+    },
+    (email, password, done) => {
+      User.findOne({ email: email }, (err, user) => {
+        if (err) {
+          return done(err);
+        }
+
+        if (!user) {
+          return done(null, false, {
+            message: "No user found with that email"
+          });
+        }
+
+        return done(null, user);
+      });
+    }
+  )
+);
+
+router.get("/signin", (req, res, next) => {
+  res.render("user/signin");
+});
 
 router.get("/signup", (req, res, next) => {
   res.render("user/signup");
