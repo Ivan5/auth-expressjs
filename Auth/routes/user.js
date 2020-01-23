@@ -35,7 +35,7 @@ passport.use(
 
         var newUser = new User();
         newUser.email = email;
-        newUser.password = password;
+        newUser.password = newUser.securePassword(password);
         newUser.save((err, user) => {
           if (err) {
             return done(err);
@@ -61,7 +61,7 @@ passport.use(
           return done(err);
         }
 
-        if (!user) {
+        if (!user || !user.verifyPassword(password)) {
           return done(null, false, {
             message: "No user found with that email"
           });
@@ -73,11 +73,19 @@ passport.use(
   )
 );
 
-router.get("/signin", (req, res, next) => {
+router.get("/signin", notLoggedIn, (req, res, next) => {
   res.render("user/signin");
 });
 
-router.get("/signup", (req, res, next) => {
+router.post(
+  "/signin",
+  passport.authenticate("local.signin", {
+    successRedirect: "/user/profile",
+    failureRedirect: "/user/signin"
+  })
+);
+
+router.get("/signup", notLoggedIn, (req, res, next) => {
   res.render("user/signup");
 });
 
@@ -89,8 +97,24 @@ router.post(
   })
 );
 
-router.get("/profile", (req, res, next) => {
+router.get("/profile", isLoggedIn, (req, res, next) => {
   res.send(req.user);
 });
+
+isLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    next();
+  }
+
+  res.redirect("/");
+};
+
+notLoggedIn = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    next();
+  }
+
+  res.redirect("/");
+};
 
 module.exports = router;
